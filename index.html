@@ -3,88 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Online Chat</title>
+<title>Online Chat Login</title>
 
 <style>
 body{
-margin:0;
-font-family:Arial,sans-serif;
+font-family:Arial;
 background:#f2f2f2;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+margin:0;
 }
-
-.container{
+.box{
 background:white;
-padding:25px;
+padding:20px;
 border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-width:90%;
-max-width:350px;
+width:300px;
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
 }
-
-h2{
-text-align:center;
-margin-bottom:20px;
-}
-
-input{
+input,button{
 width:100%;
-padding:12px;
-margin-bottom:15px;
-border:1px solid #ccc;
-border-radius:5px;
-box-sizing:border-box;
-}
-
-button{
-width:100%;
-padding:12px;
+padding:10px;
 margin-top:10px;
-border:none;
-border-radius:5px;
-font-size:16px;
+}
+button{
 cursor:pointer;
 }
-
-#signupBtn{
-background:#28a745;
-color:white;
-}
-
-#loginBtn{
-background:#007bff;
-color:white;
-}
-
-#message{
-margin-top:15px;
-text-align:center;
-font-weight:bold;
+#msg{
+margin-top:10px;
+font-size:14px;
+color:red;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
+<h3>Online Chat</h3>
 
-<h2>Online Chat</h2>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-<input type="email" id="email" placeholder="Email">
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
 
-<input type="password" id="password" placeholder="Password">
-
-<button id="signupBtn">Create Account</button>
-
-<button id="loginBtn">Log In</button>
-
-<div id="message"></div>
-
+<div id="msg"></div>
 </div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDh2fHMUbysckAxdIA8dcz8sHWrcLbW1EQ",
+authDomain: "african-enterprise-challenge-f.firebaseapp.com",
+projectId: "african-enterprise-challenge-f",
+storageBucket: "african-enterprise-challenge-f.appspot.com",
+messagingSenderId: "85146331644",
+appId: "1:85146331644:web:b28599e0c8b75498fe6a79"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const msg = document.getElementById("msg");
+
+window.signup = async function(){
+try{
+await createUserWithEmailAndPassword(auth,email.value,password.value);
+msg.style.color="green";
+msg.innerText="Account created... redirecting";
+setTimeout(()=>{ location.href="chat.html"; },1000);
+}catch(e){
+msg.innerText=e.message;
+}
+}
+
+window.login = async function(){
+try{
+await signInWithEmailAndPassword(auth,email.value,password.value);
+msg.style.color="green";
+msg.innerText="Login successful... redirecting";
+setTimeout(()=>{ location.href="chat.html"; },1000);
+}catch(e){
+msg.innerText=e.message;
+}
+}
+
+</script>
 
 </body>
 </html>
