@@ -1,155 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Chat</title>
+<title>Admin</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#111;
-color:white;
-display:flex;
-flex-direction:column;
-height:100vh;
-}
+body{margin:0;font-family:Arial;background:#111;color:#fff;display:flex;flex-direction:column;height:100vh}
+.header{background:#ff9800;color:#000;padding:12px;text-align:center}
+#box{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+.msg{background:#222;padding:10px;border-radius:8px}
+.me{background:#0d6efd}
+input{padding:10px;flex:1}
+button{padding:10px;border:none;background:#ff9800}
+.input{display:flex;gap:8px;padding:10px;background:#1c1c1c}
 
-.header{
-background:#ff9800;
-padding:15px;
-text-align:center;
-font-weight:bold;
-}
-
-#chatBox{
-flex:1;
-overflow-y:auto;
-padding:10px;
-display:flex;
-flex-direction:column;
-gap:10px;
-}
-
-.msg{
-background:#222;
-padding:10px;
-border-radius:8px;
-max-width:80%;
-word-wrap:break-word;
-font-size:15px;
-}
-
-.me{
-background:#0d6efd;
-align-self:flex-end;
-}
-
-.inputBox{
-display:flex;
-padding:10px;
-gap:10px;
-background:#1c1c1c;
-}
-
-input{
-flex:1;
-padding:10px;
-border:none;
-border-radius:5px;
-}
-
-button{
-padding:10px 15px;
-border:none;
-background:#ff9800;
-color:black;
-font-weight:bold;
-border-radius:5px;
-cursor:pointer;
-}
+img{max-width:200px;border-radius:8px}
 </style>
-
 </head>
 
 <body>
 
 <div class="header">ADMIN PANEL</div>
+<div id="box"></div>
 
-<div id="chatBox"></div>
-
-<div class="inputBox">
-<input id="msgInput" placeholder="Reply as admin...">
-<button onclick="sendMsg()">Send</button>
+<div class="input">
+<input id="text" placeholder="Reply...">
+<button onclick="send()">Send</button>
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp }
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {getFirestore,collection,addDoc,query,orderBy,onSnapshot,serverTimestamp,updateDoc,doc}
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyDh2fHMUbysckAxdIA8dcz8sHWrcLbW1EQ",
-authDomain: "african-enterprise-challenge-f.firebaseapp.com",
-projectId: "african-enterprise-challenge-f",
-storageBucket: "african-enterprise-challenge-f.firebasestorage.app",
-messagingSenderId: "85146331644",
-appId: "1:85146331644:web:b28599e0c8b75498fe6a79"
+const firebaseConfig={
+apiKey:"AIzaSyDh2fHMUbysckAxdIA8dcz8sHWrcLbW1EQ",
+authDomain:"african-enterprise-challenge-f.firebaseapp.com",
+projectId:"african-enterprise-challenge-f",
+storageBucket:"african-enterprise-challenge-f.appspot.com",
+messagingSenderId:"85146331644",
+appId:"1:85146331644:web:b28599e0c8b75498fe6a79"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-signInAnonymously(auth);
+window.send=async()=>{
 
-let adminName = "ADMIN";
-
-window.sendMsg = async function(){
-
-const input = document.getElementById("msgInput");
-if(input.value.trim()==="") return;
+let text=document.getElementById("text").value;
 
 await addDoc(collection(db,"messages"),{
-text: input.value,
-email: adminName,
-name: adminName,
-time: serverTimestamp()
+text,
+email:"ADMIN",
+name:"ADMIN",
+unsentByUser:false,
+unsentByAdmin:false,
+time:serverTimestamp()
 });
 
-input.value="";
+document.getElementById("text").value="";
 };
 
-function loadMessages(){
+function load(){
+const q=query(collection(db,"messages"),orderBy("time"));
 
-const q = query(collection(db,"messages"),orderBy("time"));
+onSnapshot(q,snap=>{
+let box=document.getElementById("box");
+box.innerHTML="";
 
-onSnapshot(q,(snapshot)=>{
-const chatBox = document.getElementById("chatBox");
-chatBox.innerHTML="";
+snap.forEach(d=>{
+let m=d.data();
+let div=document.createElement("div");
+div.className="msg";
 
-snapshot.forEach(doc=>{
-const data = doc.data();
+div.innerHTML=`
+<b>${m.name}</b><br>
+${m.unsentByAdmin ? "" : (m.text||"")}
+${m.imageUrl ? `<br><img src="${m.imageUrl}">` : ""}
+<br><button onclick="unsend('${d.id}')">Unsend</button>
+`;
 
-const div = document.createElement("div");
-div.classList.add("msg");
-
-if(data.email === adminName){
-div.classList.add("me");
-}
-
-div.innerHTML = `<b>${data.name || data.email}</b><br>${data.text}`;
-chatBox.appendChild(div);
+box.appendChild(div);
 });
-
-chatBox.scrollTop = chatBox.scrollHeight;
 });
 }
 
-loadMessages();
+window.unsend=async(id)=>{
+await updateDoc(doc(db,"messages",id),{
+unsentByAdmin:true
+});
+}
+
+load();
 
 </script>
 
