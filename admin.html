@@ -37,6 +37,8 @@ background:#222;
 padding:10px;
 border-radius:8px;
 max-width:80%;
+word-wrap:break-word;
+font-size:15px;
 }
 
 .me{
@@ -73,9 +75,7 @@ cursor:pointer;
 
 <body>
 
-<div class="header">
-ADMIN CHAT PANEL
-</div>
+<div class="header">ADMIN PANEL</div>
 
 <div id="chatBox"></div>
 
@@ -88,7 +88,7 @@ ADMIN CHAT PANEL
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp }
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -104,7 +104,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// admin login (simple)
 signInAnonymously(auth);
 
 let adminName = "ADMIN";
@@ -117,6 +116,7 @@ if(input.value.trim()==="") return;
 await addDoc(collection(db,"messages"),{
 text: input.value,
 email: adminName,
+name: adminName,
 time: serverTimestamp()
 });
 
@@ -141,13 +141,12 @@ if(data.email === adminName){
 div.classList.add("me");
 }
 
-div.innerHTML = `<b>${data.email}</b><br>${data.text}`;
+div.innerHTML = `<b>${data.name || data.email}</b><br>${data.text}`;
 chatBox.appendChild(div);
 });
 
 chatBox.scrollTop = chatBox.scrollHeight;
 });
-
 }
 
 loadMessages();
