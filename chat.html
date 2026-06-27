@@ -25,19 +25,21 @@ font-weight:bold;
 
 #chatBox{
 flex:1;
-padding:10px;
 overflow-y:auto;
+padding:10px;
 display:flex;
 flex-direction:column;
-gap:8px;
+gap:10px;
 }
 
 .msg{
 background:white;
 padding:10px;
 border-radius:8px;
-max-width:70%;
-box-shadow:0 1px 3px rgba(0,0,0,0.1);
+max-width:75%;
+word-wrap:break-word;
+font-size:15px;
+line-height:1.4;
 }
 
 .me{
@@ -70,11 +72,10 @@ cursor:pointer;
 </style>
 
 </head>
+
 <body>
 
-<div class="header">
-Real Time Chat
-</div>
+<div class="header">User Chat</div>
 
 <div id="chatBox"></div>
 
@@ -87,7 +88,7 @@ Real Time Chat
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp }
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -122,6 +123,7 @@ if(input.value.trim()==="") return;
 await addDoc(collection(db,"messages"),{
 text: input.value,
 email: currentUser.email,
+name: currentUser.displayName || currentUser.email,
 time: serverTimestamp()
 });
 
@@ -146,7 +148,7 @@ if(data.email === currentUser.email){
 div.classList.add("me");
 }
 
-div.innerHTML = `<b>${data.email}</b><br>${data.text}`;
+div.innerHTML = `<b>${data.name || data.email}</b><br>${data.text}`;
 chatBox.appendChild(div);
 });
 
@@ -157,4 +159,4 @@ chatBox.scrollTop = chatBox.scrollHeight;
 </script>
 
 </body>
-  </html>
+</html>
