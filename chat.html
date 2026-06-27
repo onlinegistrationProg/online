@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#f2f2f2;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
+
+.header{
+background:#007bff;
+color:white;
+padding:15px;
+text-align:center;
+font-weight:bold;
+}
+
+#chatBox{
+flex:1;
+padding:10px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:8px;
+}
+
+.msg{
+background:white;
+padding:10px;
+border-radius:8px;
+max-width:70%;
+box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+
+.me{
+align-self:flex-end;
+background:#d1e7ff;
+}
+
+.inputBox{
+display:flex;
+padding:10px;
+background:white;
+gap:10px;
+}
+
+input{
+flex:1;
+padding:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+background:#007bff;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+Real Time Chat
+</div>
+
+<div id="chatBox"></div>
+
+<div class="inputBox">
+<input id="msgInput" placeholder="Type message...">
+<button onclick="sendMsg()">Send</button>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDh2fHMUbysckAxdIA8dcz8sHWrcLbW1EQ",
+authDomain: "african-enterprise-challenge-f.firebaseapp.com",
+projectId: "african-enterprise-challenge-f",
+storageBucket: "african-enterprise-challenge-f.firebasestorage.app",
+messagingSenderId: "85146331644",
+appId: "1:85146331644:web:b28599e0c8b75498fe6a79"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+
+onAuthStateChanged(auth,(user)=>{
+if(!user){
+location.href="index.html";
+}else{
+currentUser = user;
+loadMessages();
+}
+});
+
+window.sendMsg = async function(){
+
+const input = document.getElementById("msgInput");
+if(input.value.trim()==="") return;
+
+await addDoc(collection(db,"messages"),{
+text: input.value,
+email: currentUser.email,
+time: serverTimestamp()
+});
+
+input.value="";
+};
+
+function loadMessages(){
+
+const q = query(collection(db,"messages"),orderBy("time"));
+
+onSnapshot(q,(snapshot)=>{
+const chatBox = document.getElementById("chatBox");
+chatBox.innerHTML="";
+
+snapshot.forEach(doc=>{
+const data = doc.data();
+
+const div = document.createElement("div");
+div.classList.add("msg");
+
+if(data.email === currentUser.email){
+div.classList.add("me");
+}
+
+div.innerHTML = `<b>${data.email}</b><br>${data.text}`;
+chatBox.appendChild(div);
+});
+
+chatBox.scrollTop = chatBox.scrollHeight;
+});
+}
+
+</script>
+
+</body>
+  </html>
